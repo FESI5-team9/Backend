@@ -124,52 +124,6 @@ public class AuthenticationController {
 		return ResponseEntity.ok(authenticationService.authenticate(request));
 	}
 
-	@Operation(
-		summary = "카카오 로그인 리다이렉트",
-		description = "카카오 로그인 리다이렉트를 시도합니다.",
-		responses = {
-			@ApiResponse(responseCode = "200", description = "로그인 페이지로 리다이렉트됨",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"message\":\"카카오 로그인 페이지로 리다이렉트됩니다. URL을 복사하여 브라우저에 입력하세요.\"}"
-					)
-				)
-			),
-			@ApiResponse(
-				responseCode = "400",
-				description = "잘못된 요청",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"BAD_REQUEST\",\"message\":\"잘못된 요청입니다.\"}"
-					)
-				)
-			),
-			@ApiResponse(
-				responseCode = "500",
-				description = "서버 오류",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"INTERNAL_SERVER_ERROR\",\"message\":\"서버 오류가 발생했습니다.\"}"
-					)
-				)
-			)
-		}
-	)
-	@GetMapping("/kakao/login")
-	public ResponseEntity<Map<String, String>> redirectToKakaoLogin() {
-		String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize?client_id=" + clientId +
-			"&redirect_uri=" + redirectUri + "&response_type=code";
-
-		Map<String, String> response = new HashMap<>();
-		response.put("message", "카카오 로그인 페이지로 리다이렉트됩니다. URL을 복사하여 브라우저에 입력하세요.");
-		response.put("redirectUrl", kakaoAuthUrl);
-
-		return ResponseEntity.ok(response);
-	}
-
 	@Operation(summary = "이메일 중복확인", description = "이메일 중복 확인을 진행합니다.",
 		responses = {
 			@ApiResponse(responseCode = "200", description = "중복 확인 성공",
