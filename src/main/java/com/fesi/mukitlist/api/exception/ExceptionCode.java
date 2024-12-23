@@ -7,10 +7,11 @@ import lombok.Getter;
 @Getter
 public enum ExceptionCode {
 	//생성
-	REQUIRED_PROPERTIES(HttpStatus.BAD_REQUEST, "REQUIRED_PROPERTIES", "필수 값이 입력되지 않았습니다"),
+	REQUIRED_PROPERTIES(HttpStatus.BAD_REQUEST, "REQUIRED_PROPERTIES", "필수 값이 입력되지 않았습니다."),
 
 	//유저
-	EMAIL_EXIST(HttpStatus.BAD_REQUEST, "EMAIL_EXIST", "중복된 이메일입니다"),
+	EMAIL_EXIST(HttpStatus.BAD_REQUEST, "EMAIL_EXIST", "중복된 이메일입니다."),
+	NICKNAME_EXIST(HttpStatus.BAD_REQUEST, "NICKNAME_EXIST", "중복된 닉네임입니다."),
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "NOT_FOUND", "사용자를 찾을 수 없습니다."),
 	LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "LOGIN_REQUIRED", "로그인이 필요합니다."),
 
@@ -20,8 +21,8 @@ public enum ExceptionCode {
 	NOT_VALID_TOKEN(HttpStatus.UNAUTHORIZED, "NOT_VALID_TOKEN", "해당 토큰은 유효한 토큰이 아닙니다."),
 
 	//모임
-	AT_LEAST_ONE(HttpStatus.BAD_REQUEST, "AT_LEAST_ONE", "size는 최소 1이어야 합니다"),
-	NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "모임을 찾을 수 없습니다"),
+	AT_LEAST_ONE(HttpStatus.BAD_REQUEST, "AT_LEAST_ONE", "size는 최소 1이어야 합니다."),
+	NOT_FOUND(HttpStatus.NOT_FOUND, "NOT_FOUND", "모임을 찾을 수 없습니다."),
 	MINIMUM_CAPACITY(HttpStatus.BAD_REQUEST, "MINIMUM_CAPACITY", "최소 인원은 5명입니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "FORBIDDEN", "모임을 변경할 권한이 없습니다."),
 	PAST_GATHERING(HttpStatus.BAD_REQUEST, "PAST_GATHERING", "이미 지난 모임입니다."),

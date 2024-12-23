@@ -26,23 +26,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApiControllerAdvice {
 
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<ValidationErrorResponse> handle(HttpMessageNotReadableException e) {
-
-		String parameter = "";
-		if (e.getCause() instanceof JsonMappingException jsonMappingException) {
-			if (!jsonMappingException.getPath().isEmpty()) {
-				parameter = jsonMappingException.getPath().get(0).getFieldName();
-			}
-		}
-
-		assert parameter != null;
-		return new ResponseEntity<>(ValidationErrorResponse.of(
-			"VALIDATION_ERROR",
-			parameter,
-			responseMessage(parameter)
-		), HttpStatus.BAD_REQUEST);
-	}
+//	@ExceptionHandler(HttpMessageNotReadableException.class)
+//	public ResponseEntity<ValidationErrorResponse> handle(HttpMessageNotReadableException e) {
+//
+//		String parameter = "";
+//		if (e.getCause() instanceof JsonMappingException jsonMappingException) {
+//			if (!jsonMappingException.getPath().isEmpty()) {
+//				parameter = jsonMappingException.getPath().get(0).getFieldName();
+//			}
+//		}
+//
+//		assert parameter != null;
+//		return new ResponseEntity<>(ValidationErrorResponse.of(
+//			"VALIDATION_ERROR",
+//			parameter,
+//			responseMessage(parameter)
+//		), HttpStatus.BAD_REQUEST);
+//	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ApiResponses(value = {
@@ -77,36 +77,36 @@ public class ApiControllerAdvice {
 
 	}
 
-	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	@ApiResponses(value = {
-		@ApiResponse(responseCode = "400", description = "요청 오류",
-			content = @Content(mediaType = "application/json",
-				schema = @Schema(implementation = ValidationErrorResponse.class))),
-		@ApiResponse(responseCode = "404", description = "조회 실패 오류",
-			content = @Content(mediaType = "application/json",
-				schema = @Schema(implementation = AppErrorResponse.class)))
-	})
-	public ResponseEntity<ValidationErrorResponse> handle(MethodArgumentTypeMismatchException e) {
-
-		String parameterName = e.getName();
-
-		return new ResponseEntity<>(ValidationErrorResponse.of(
-			"VALIDATION_ERROR",
-			parameterName,
-			responseMessage(parameterName)
-		), HttpStatus.BAD_REQUEST);
-	}
+//	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+//	@ApiResponses(value = {
+//		@ApiResponse(responseCode = "400", description = "요청 오류",
+//			content = @Content(mediaType = "application/json",
+//				schema = @Schema(implementation = ValidationErrorResponse.class))),
+//		@ApiResponse(responseCode = "404", description = "조회 실패 오류",
+//			content = @Content(mediaType = "application/json",
+//				schema = @Schema(implementation = AppErrorResponse.class)))
+//	})
+//	public ResponseEntity<ValidationErrorResponse> handle(MethodArgumentTypeMismatchException e) {
+//
+//		String parameterName = e.getName();
+//
+//		return new ResponseEntity<>(ValidationErrorResponse.of(
+//			"VALIDATION_ERROR",
+//			parameterName,
+//			responseMessage(parameterName)
+//		), HttpStatus.BAD_REQUEST);
+//	}
 
 	@ExceptionHandler(AppException.class)
 	public ResponseEntity<AppErrorResponse> handle(AppException e) {
 		return new ResponseEntity<>(AppErrorResponse.of(e.getExceptionCode()), e.getExceptionCode().getStatus());
 	}
 
-	@ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-	protected ResponseEntity handleSQLException(SQLIntegrityConstraintViolationException e) {
-		log.error("ERROR: {}", e.getMessage(), e);
-		return new ResponseEntity(AppErrorResponse.of(ExceptionCode.EMAIL_EXIST), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
+//	@ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+//	protected ResponseEntity handleSQLException(SQLIntegrityConstraintViolationException e) {
+//		log.error("ERROR: {}", e.getMessage(), e);
+//		return new ResponseEntity(AppErrorResponse.of(ExceptionCode.EMAIL_EXIST), HttpStatus.INTERNAL_SERVER_ERROR);
+//	}
 
 	private String responseMessage(String parameter) {
 		String message = "";

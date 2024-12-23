@@ -30,6 +30,14 @@ public class UserService {
 	private final S3Service s3Service;
 
 	public User createUser(UserServiceCreateRequest request) {
+
+		if (userRepository.existsUserByEmail(request.email())) {
+			throw new AppException(EMAIL_EXIST);
+		}
+		if (userRepository.existsUserByNickname(request.nickname())) {
+			throw new AppException(NICKNAME_EXIST);
+		}
+
 		String encodePassword = passwordEncoder.encode(request.password()); // 해싱하는 부분
 		User user = User.create(request, encodePassword);
 		return userRepository.save(user);

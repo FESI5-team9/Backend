@@ -1,9 +1,11 @@
 package com.fesi.mukitlist.api.controller.auth;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
+import com.fesi.mukitlist.api.exception.response.ValidationErrorResponse;
+import com.fesi.mukitlist.core.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +34,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -66,109 +67,75 @@ public class AuthenticationController {
 					)
 				)
 			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "요청 오류",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = ValidationErrorResponse.class)))
 		}
 	)
 	@PostMapping("/signup")
 	public ResponseEntity<SimpleApiResponse> signup(
-		@RequestBody UserCreateRequest userCreateRequest) {
+		@Valid @RequestBody UserCreateRequest userCreateRequest) {
 		userService.createUser(userCreateRequest.toServiceRequest());
 		return new ResponseEntity<>(SimpleApiResponse.of("사용자 생성 성공"), HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "로그인", description = "로그인을 시도합니다.",
-		responses = {
-			@ApiResponse(responseCode = "200", description = "로그인 성공",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(implementation = AuthenticationResponse.class))),
-			@ApiResponse(
-				responseCode = "403",
-				description = "권한 오류",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"FORBIDDEN\",\"message\":\"권한이 없습니다.\"}"
-					)
-				)
-			),
-			@ApiResponse(
-				responseCode = "404",
-				description = "유저 없음",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"NOT_FOUND\",\"message\":\"유저를 찾을 수 없습니다.\"}"
-					)
-				)
-			),
-		}
-	)
-	@PostMapping("/signin")
-	public ResponseEntity<AuthenticationResponse> signIn(
-		@RequestBody AuthenticationServiceRequest request, HttpServletResponse response) {
-		return ResponseEntity.ok(authenticationService.authenticate(request, response));
-	}
+//	@Operation(summary = "로그인", description = "로그인을 시도합니다.",
+//		responses = {
+//			@ApiResponse(responseCode = "200", description = "로그인 성공",
+//				content = @Content(
+//					mediaType = "application/json",
+//					schema = @Schema(implementation = AuthenticationResponse.class))),
+//			@ApiResponse(
+//				responseCode = "403",
+//				description = "권한 오류",
+//				content = @Content(
+//					mediaType = "application/json",
+//					schema = @Schema(
+//						example = "{\"code\":\"FORBIDDEN\",\"message\":\"권한이 없습니다.\"}"
+//					)
+//				)
+//			),
+//			@ApiResponse(
+//				responseCode = "404",
+//				description = "유저 없음",
+//				content = @Content(
+//					mediaType = "application/json",
+//					schema = @Schema(
+//						example = "{\"code\":\"NOT_FOUND\",\"message\":\"유저를 찾을 수 없습니다.\"}"
+//					)
+//				)
+//			),
+//		}
+//	)
+//	@PostMapping("/signin")
+//	public ResponseEntity<AuthenticationResponseV2> signInV2(
+//			@RequestBody KakaoLoginRequest request) {
+//		return ResponseEntity.ok(authenticationService.authenticate(request));
+//	}
 
 	@Operation(summary = "로그인", description = "로그인을 시도합니다.",
-		responses = {
-			@ApiResponse(responseCode = "200", description = "로그인 성공",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(implementation = AuthenticationResponseV2.class)
-				))
-		}
+			responses = {
+					@ApiResponse(responseCode = "200", description = "로그인 성공",
+							content = @Content(
+									mediaType = "application/json",
+									schema = @Schema(implementation = AuthenticationResponseV2.class)
+							))
+			}
 	)
 	@PostMapping("/v2/signin")
 	public ResponseEntity<AuthenticationResponseV2> signInV2(
-		@RequestBody AuthenticationServiceRequest request) {
+			@RequestBody AuthenticationServiceRequest request) {
 		return ResponseEntity.ok(authenticationService.authenticate(request));
 	}
 
-	@Operation(
-		summary = "카카오 로그인 리다이렉트",
-		description = "카카오 로그인 리다이렉트를 시도합니다.",
-		responses = {
-			@ApiResponse(responseCode = "200", description = "로그인 페이지로 리다이렉트됨",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"message\":\"카카오 로그인 페이지로 리다이렉트됩니다. URL을 복사하여 브라우저에 입력하세요.\"}"
-					)
-				)
-			),
-			@ApiResponse(
-				responseCode = "400",
-				description = "잘못된 요청",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"BAD_REQUEST\",\"message\":\"잘못된 요청입니다.\"}"
-					)
-				)
-			),
-			@ApiResponse(
-				responseCode = "500",
-				description = "서버 오류",
-				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(
-						example = "{\"code\":\"INTERNAL_SERVER_ERROR\",\"message\":\"서버 오류가 발생했습니다.\"}"
-					)
-				)
-			)
-		}
-	)
-	@GetMapping("/kakao/login")
-	public ResponseEntity<Map<String, String>> redirectToKakaoLogin() {
-		String kakaoAuthUrl = "https://kauth.kakao.com/oauth/authorize?client_id=" + clientId +
-			"&redirect_uri=" + redirectUri + "&response_type=code";
-
-		Map<String, String> response = new HashMap<>();
-		response.put("message", "카카오 로그인 페이지로 리다이렉트됩니다. URL을 복사하여 브라우저에 입력하세요.");
-		response.put("redirectUrl", kakaoAuthUrl);
-
-		return ResponseEntity.ok(response);
-	}
+//	@PostMapping("kakao/signin")
+//	public ResponseEntity<AuthenticationResponseV2> signInKakao(
+//			@RequestBody KakaoLoginRequest request) {
+//		return ResponseEntity.ok(authenticationService.authenticate(request));
+//	}
 
 	@Operation(summary = "이메일 중복확인", description = "이메일 중복 확인을 진행합니다.",
 		responses = {
