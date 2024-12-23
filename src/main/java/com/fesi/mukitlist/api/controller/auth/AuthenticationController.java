@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.fesi.mukitlist.api.exception.response.ValidationErrorResponse;
+import com.fesi.mukitlist.core.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

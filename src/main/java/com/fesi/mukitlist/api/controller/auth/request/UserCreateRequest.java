@@ -14,9 +14,9 @@ public record UserCreateRequest(
 	@NotEmpty(message = "이메일은 필수 입력값 입니다.")
 	@Email(message = "유효한 이메일 형식이어야 합니다.")
 	String email,
-	@NotEmpty(message = "비밀번호는 필수 입력값 입니다.")
+	@NotEmpty
 	@Pattern(
-			regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$\n",
+			regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,16}",
 			message = "비밀번호는 8자 이상, 영문, 숫자, 특수문자(@$!%*#?&)를 모두 포함해야 합니다"
 	)
 	String password,
