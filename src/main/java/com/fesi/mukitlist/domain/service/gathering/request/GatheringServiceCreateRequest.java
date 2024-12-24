@@ -24,8 +24,9 @@ public record GatheringServiceCreateRequest(
 	String description,
 	List<String> keyword
 ) {
-	public int minimumCapacity() {
-		if (capacity < 5) throw new AppException(MINIMUM_CAPACITY);
-		return capacity;
+	public GatheringServiceCreateRequest {
+		if (dateTime.isBefore(LocalDateTime.now())) throw new AppException(PAST_GATHERING);
+		if (dateTime.isAfter(LocalDateTime.now().plusDays(61))) throw new AppException(FUTURE_GATHERING);
+		if (capacity < openParticipantCount) throw new AppException(MINIMUM_CAPACITY);
 	}
 }

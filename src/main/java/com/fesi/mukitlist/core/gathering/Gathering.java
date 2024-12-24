@@ -141,7 +141,7 @@ public class Gathering {
 			.name(request.name())
 			.dateTime(request.dateTime())
 			.openParticipantCount(request.openParticipantCount())
-			.capacity(request.minimumCapacity())
+			.capacity(request.capacity())
 			.image(storedName)
 			.registrationEnd(request.dateTime().minusHours(6))
 			.address1(request.address1())
@@ -152,20 +152,15 @@ public class Gathering {
 	}
 
 	public Gathering update(GatheringServiceUpdateRequest request, String storedName) {
-		this.location = request.location() != null ? request.location() : this.location;
-		this.type = request.type() != null ? request.type() : this.type;
 		this.name = request.name() != null ? request.name() : this.name;
-		this.dateTime = request.dateTime() != null ? request.dateTime() : this.dateTime;
 
 		if (request.openParticipantCount() != null && request.openParticipantCount() > 0) {
 			this.openParticipantCount = request.openParticipantCount();
 		}
 		if (request.capacity() != null && request.capacity() > 0) {
-			this.capacity = request.minimumCapacity();
+			this.capacity = request.minimumCapacity(this.openParticipantCount);
 		}
 		this.image = storedName != null ? storedName : this.image;
-		this.address1 = request.address1() != null ? request.address1() : this.address1;
-		this.address2 = request.address2() != null ? request.address2() : this.address2;
 		this.description = request.description() != null ? request.description() : this.description;
 
 		return this;
