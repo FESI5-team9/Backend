@@ -55,6 +55,10 @@ public class UserService {
 
 	public UserInfoResponse updateUser(User user, UserUpdateRequest request) throws IOException {
 
+		if (userRepository.existsUserByNickname(request.nickname())) {
+			throw new AppException(NICKNAME_EXIST);
+		}
+
 		Optional.ofNullable(request.nickname()).ifPresent(user::updateNickname);
 		if (request.image() != null) {
 			String storedName = s3Service.upload(request.image(), request.image().getOriginalFilename());
