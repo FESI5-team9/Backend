@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fesi.mukitlist.api.controller.gathering.request.ChangeGatheringStautsRequest;
 import com.fesi.mukitlist.api.exception.AppException;
 import com.fesi.mukitlist.core.auth.application.User;
 import com.fesi.mukitlist.core.gathering.Gathering;
@@ -20,6 +21,7 @@ import com.fesi.mukitlist.core.gathering.Keyword;
 import com.fesi.mukitlist.core.gathering.constant.GatheringStatus;
 import com.fesi.mukitlist.core.gathering.constant.GatheringType;
 import com.fesi.mukitlist.core.gathering.constant.LocationType;
+import com.fesi.mukitlist.core.repository.FavoriteGatheringRepository;
 import com.fesi.mukitlist.core.repository.gathering.GatheringRepository;
 import com.fesi.mukitlist.core.usergathering.UserGathering;
 import com.fesi.mukitlist.domain.service.aws.S3Service;
@@ -45,6 +47,7 @@ public class GatheringService {
 	private final KeywordService keywordService;
 	private final FavoriteService favoriteService;
 	private final S3Service s3Service;
+	private final FavoriteGatheringRepository favoriteGatheringRepository;
 
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> getGatherings(GatheringServiceRequest request, User user, Pageable pageable) {
@@ -81,6 +84,14 @@ public class GatheringService {
 				g,
 				gatheringCandidates.contains(g.getId()),
 				checkIsFavoriteGathering(g, user)))
+			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<GatheringListResponse> getGatheringsByUserId(Long userId, Pageable pageable) {
+		List<Gathering> response = gatheringRepository.findGatheringsByUserId(userId, pageable);
+		return response.stream()
+			.map(GatheringListResponse::of)
 			.toList();
 	}
 
@@ -137,9 +148,9 @@ public class GatheringService {
 		checkCancelAuthority(gathering, user);
 
 		LocalDateTime canceledTime = LocalDateTime.now();
-		gathering.updateCanceledAt(canceledTime);
-		Gathering savedGathering = gatheringRepository.save(gathering);
+		checkCancelAvailability(gathering, canceledTime);
 
+		Gathering savedGathering = gatheringRepository.save(gathering);
 		List<Keyword> savedKeywords = keywordService.findByGathering(gathering);
 
 		return GatheringResponse.of(savedGathering, user, savedKeywords);
@@ -157,7 +168,7 @@ public class GatheringService {
 	public void leaveGathering(Long id, User user, LocalDateTime leaveTime) {
 		Gathering gathering = getGatheringsFrom(id);
 		checkGatheringHost(gathering, user);
-		
+
 		participationService.checkAlreadyLeavedGathering(gathering, user);
 		participationService.leaveGathering(gathering, user, leaveTime);
 	}
@@ -199,34 +210,24 @@ public class GatheringService {
 			.toList();
 	}
 
-	public boolean choiceFavorite(Long id, User user) {
-		try {
-			Gathering gathering = getGatheringsFrom(id);
-			favoriteService.markAsFavorite(gathering, user);
-			return true;
-		} catch (AppException e) {
-			return false;
-		}
-	}
-
-	public boolean cancelFavorite(Long id, User user) {
-		try {
-			Gathering gathering = getGatheringsFrom(id);
-			favoriteService.unmarkAsFavorite(gathering, user);
-			return true;
-		} catch (AppException e) {
-			return false;
-		}
-	}
-
-	public Map<String, String> changeGatheringStatus(Long id, GatheringStatus status, User user) {
+	public void choiceFavorite(Long id, User user) {
 		Gathering gathering = getGatheringsFrom(id);
-		if (gathering.getUser().getId().equals(user.getId())) {
-			gathering.changeStatus(status);
-		} else {
-			throw new AppException(FORBIDDEN);
-		}
-		return Map.of("모임 상태 변경", status.getDescription());
+		checkHostUserMarkFavorite(user, gathering);
+		checkIsAlreadyFavoriteGathering(gathering, user);
+		favoriteService.markAsFavorite(gathering, user);
+	}
+
+	public void cancelFavorite(Long id, User user) {
+		Gathering gathering = getGatheringsFrom(id);
+		checkIsAlreadyCanceledFavoriteGathering(gathering, user);
+		favoriteService.unmarkAsFavorite(gathering, user);
+	}
+
+	public Map<String, String> changeGatheringStatus(Long id, ChangeGatheringStautsRequest request, User user) {
+		Gathering gathering = getGatheringsFrom(id);
+		checkChangeStatusPermisson(user, gathering);
+		gathering.changeStatus(request.status());
+		return Map.of("모임 상태 변경", request.status().getDescription());
 	}
 
 	private boolean checkIsFavoriteGathering(Gathering gathering, User user) {
@@ -257,10 +258,41 @@ public class GatheringService {
 		}
 	}
 
+	private void checkCancelAvailability(Gathering gathering, LocalDateTime canceledTime) {
+		if (!gathering.updateCanceledAt(canceledTime)) {
+			throw new AppException(CANCEL_GATHERING_NOT_AVAILABLE);
+		}
+	}
+
 	private void checkUpdateAuthority(Gathering gathering, User user) {
 		if (!gathering.isHostUser(user)) {
 			throw new AppException(FORBIDDEN);
 		}
 	}
+
+	private void checkHostUserMarkFavorite(User user, Gathering gathering) {
+		if (gathering.isHostUser(user)) {
+			throw new AppException(HOST_CANNOT_FAVORITE);
+		}
+	}
+
+	private void checkChangeStatusPermisson(User user, Gathering gathering) {
+		if (gathering.getUser().getId().equals(user.getId())) {
+			throw new AppException(FORBIDDEN);
+		}
+	}
+
+	private void checkIsAlreadyFavoriteGathering(Gathering gathering, User user) {
+		if (favoriteGatheringRepository.existsByIdGatheringIdAndIdUserId(gathering.getId(), user.getId())) {
+			throw new AppException(ALREADY_FAVORITE_GATHERING);
+		}
+	}
+	private void checkIsAlreadyCanceledFavoriteGathering(Gathering gathering, User user) {
+		if (!favoriteGatheringRepository.existsByIdGatheringIdAndIdUserId(gathering.getId(), user.getId())) {
+			throw new AppException(ALREADY_CANCELED_FAVORITE_GATHERING);
+		}
+	}
+
+
 
 }
