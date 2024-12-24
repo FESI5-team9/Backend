@@ -94,7 +94,7 @@ public class GatheringController {
 	}
 
 	@Operation(summary = "사용자가 생성한 모임 조회", description = "사용자가 생성한 모임을 조회합니다.")
-	@GetMapping("/created/{userId}")
+	@GetMapping("/by/{userId}")
 	ResponseEntity<List<GatheringListResponse>> getGatheringsByUserId(
 		@PathVariable("userId") Long userId,
 		@RequestParam(defaultValue = "10") int size,
