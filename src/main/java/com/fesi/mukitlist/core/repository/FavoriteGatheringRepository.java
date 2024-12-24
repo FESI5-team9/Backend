@@ -10,4 +10,5 @@ import com.fesi.mukitlist.core.gathering.favorite.FavoriteGatheringId;
 public interface FavoriteGatheringRepository extends JpaRepository<FavoriteGathering, FavoriteGatheringId> {
 	List<FavoriteGathering> findById_UserId(Long userId);
 
+	boolean existsByIdGatheringIdAndIdUserId(Long gatheringId, Long userId);
 }

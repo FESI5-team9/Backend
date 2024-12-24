@@ -20,6 +20,7 @@ import com.fesi.mukitlist.core.gathering.Keyword;
 import com.fesi.mukitlist.core.gathering.constant.GatheringStatus;
 import com.fesi.mukitlist.core.gathering.constant.GatheringType;
 import com.fesi.mukitlist.core.gathering.constant.LocationType;
+import com.fesi.mukitlist.core.repository.FavoriteGatheringRepository;
 import com.fesi.mukitlist.core.repository.gathering.GatheringRepository;
 import com.fesi.mukitlist.core.usergathering.UserGathering;
 import com.fesi.mukitlist.domain.service.aws.S3Service;
@@ -45,6 +46,7 @@ public class GatheringService {
 	private final KeywordService keywordService;
 	private final FavoriteService favoriteService;
 	private final S3Service s3Service;
+	private final FavoriteGatheringRepository favoriteGatheringRepository;
 
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> getGatherings(GatheringServiceRequest request, User user, Pageable pageable) {
@@ -145,7 +147,6 @@ public class GatheringService {
 		return GatheringResponse.of(savedGathering, user, savedKeywords);
 	}
 
-
 	public void joinGathering(Long id, User user) {
 		Gathering gathering = getGatheringsFrom(id);
 
@@ -158,7 +159,7 @@ public class GatheringService {
 	public void leaveGathering(Long id, User user, LocalDateTime leaveTime) {
 		Gathering gathering = getGatheringsFrom(id);
 		checkGatheringHost(gathering, user);
-		
+
 		participationService.checkAlreadyLeavedGathering(gathering, user);
 		participationService.leaveGathering(gathering, user, leaveTime);
 	}
@@ -200,24 +201,17 @@ public class GatheringService {
 			.toList();
 	}
 
-	public boolean choiceFavorite(Long id, User user) {
-		try {
-			Gathering gathering = getGatheringsFrom(id);
-			favoriteService.markAsFavorite(gathering, user);
-			return true;
-		} catch (AppException e) {
-			return false;
-		}
+	public void choiceFavorite(Long id, User user) {
+		Gathering gathering = getGatheringsFrom(id);
+		checkHostUserMarkFavorite(user, gathering);
+		checkIsAlreadyFavoriteGathering(gathering, user);
+		favoriteService.markAsFavorite(gathering, user);
 	}
 
-	public boolean cancelFavorite(Long id, User user) {
-		try {
-			Gathering gathering = getGatheringsFrom(id);
-			favoriteService.unmarkAsFavorite(gathering, user);
-			return true;
-		} catch (AppException e) {
-			return false;
-		}
+	public void cancelFavorite(Long id, User user) {
+		Gathering gathering = getGatheringsFrom(id);
+		checkIsAlreadyCanceledFavoriteGathering(gathering, user);
+		favoriteService.unmarkAsFavorite(gathering, user);
 	}
 
 	public Map<String, String> changeGatheringStatus(Long id, GatheringStatus status, User user) {
@@ -264,11 +258,26 @@ public class GatheringService {
 		}
 	}
 
-
 	private void checkUpdateAuthority(Gathering gathering, User user) {
 		if (!gathering.isHostUser(user)) {
 			throw new AppException(FORBIDDEN);
 		}
 	}
 
+	private void checkHostUserMarkFavorite(User user, Gathering gathering) {
+		if (gathering.isHostUser(user)) {
+			throw new AppException(HOST_CANNOT_FAVORITE);
+		}
+	}
+
+	private void checkIsAlreadyFavoriteGathering(Gathering gathering, User user) {
+		if (favoriteGatheringRepository.existsByIdGatheringIdAndIdUserId(gathering.getId(), user.getId())) {
+			throw new AppException(ALREADY_FAVORITE_GATHERING);
+		}
+	}
+	private void checkIsAlreadyCanceledFavoriteGathering(Gathering gathering, User user) {
+		if (!favoriteGatheringRepository.existsByIdGatheringIdAndIdUserId(gathering.getId(), user.getId())) {
+			throw new AppException(ALREADY_CANCELED_FAVORITE_GATHERING);
+		}
+	}
 }

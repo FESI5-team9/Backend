@@ -27,7 +27,8 @@ public enum ExceptionCode {
 	FORBIDDEN(HttpStatus.FORBIDDEN, "FORBIDDEN", "모임을 변경할 권한이 없습니다."),
 	PAST_GATHERING(HttpStatus.BAD_REQUEST, "PAST_GATHERING", "이미 지난 모임입니다."),
 	FUTURE_GATHERING(HttpStatus.BAD_REQUEST, "FUTURE_GATHERING", "모임은 60일 이내로만 생성 가능합니다."),
-	CANCEL_GATHERING_NOT_AVAILABLE(HttpStatus.BAD_REQUEST,"CANCEL_GATHERING_NOT_AVAILABLE", "모임 취소는 모임 시작 전까지만 가능합니다."),
+	CANCEL_GATHERING_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "CANCEL_GATHERING_NOT_AVAILABLE",
+		"모임 취소는 모임 시작 전까지만 가능합니다."),
 
 	//참여
 	HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "HOST_CANNOT_LEAVE", "호스트는 모임을 떠날 수 없습니다."),
@@ -36,9 +37,15 @@ public enum ExceptionCode {
 	MAXIMUM_PARTICIPANTS(HttpStatus.BAD_REQUEST, "MAXIMUM_PARTICIPANTS", "정원 초과 입니다."),
 	ALREADY_JOINED_GATHERING(HttpStatus.BAD_REQUEST, "ALREADY_JOINED_GATHERING", "이미 참여한 모임입니다."),
 	ALREADY_LEAVED_GATHERING(HttpStatus.BAD_REQUEST, "ALREADY_LEAVED_GATHERING", "이미 참여 취소한 모임입니다."),
+
+	// 찜하기
+	HOST_CANNOT_FAVORITE(HttpStatus.BAD_REQUEST, "HOST_CANNOT_FAVORITE", "호스트는 자기 모임을 찜할 수 없습니다."),
+	ALREADY_FAVORITE_GATHERING(HttpStatus.BAD_REQUEST, "ALREADY_FAVORITE_GATHERING", "이미 찜한 모임입니다."),
+	ALREADY_CANCELED_FAVORITE_GATHERING(HttpStatus.BAD_REQUEST, "ALREADY_CANCELED_FAVORITE_GATHERING",
+		"이미 찜을 취소한 모임입니다."),
+
 	//파일
 	RESOURCE_SIZE_LIMIT(HttpStatus.BAD_REQUEST, "SIZE_LIMIT", "파일의 용량은 10mb 이하여야 합니다."),
-
 	//서버
 	IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "IO_EXCEPTION", "입출력 오류가 발생했습니다."),
 	SERVER_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_CHECK", "서버 로그 확인을 요청해주세요.");
