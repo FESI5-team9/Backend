@@ -30,6 +30,6 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
 
 	List<Gathering> findAllByIdIn(List<Long> gatheringId, Pageable pageable);
 
-	List<Gathering> findGatheringsByUser(User user, Pageable pageable);
+	List<Gathering> findGatheringsByUserId(Long userId, Pageable pageable);
 
 }

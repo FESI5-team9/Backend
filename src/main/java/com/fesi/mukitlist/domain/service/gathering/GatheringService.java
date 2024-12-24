@@ -87,6 +87,14 @@ public class GatheringService {
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<GatheringListResponse> getGatheringsByUserId(Long userId, Pageable pageable) {
+		List<Gathering> response = gatheringRepository.findGatheringsByUserId(userId, pageable);
+		return response.stream()
+			.map(GatheringListResponse::of)
+			.toList();
+	}
+
 	public GatheringCreateResponse createGathering(GatheringServiceCreateRequest request, User user) throws
 		IOException {
 
@@ -284,4 +292,7 @@ public class GatheringService {
 			throw new AppException(ALREADY_CANCELED_FAVORITE_GATHERING);
 		}
 	}
+
+
+
 }

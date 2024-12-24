@@ -93,6 +93,21 @@ public class GatheringController {
 			gatheringService.searchGathering(search, user != null ? user.getUser() : null, location, type, pageable));
 	}
 
+	@Operation(summary = "사용자가 생성한 모임 조회", description = "사용자가 생성한 모임을 조회합니다.")
+	@GetMapping("/created/{userId}")
+	ResponseEntity<List<GatheringListResponse>> getGatheringsByUserId(
+		@PathVariable("userId") Long userId,
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "dateTime") String sort,
+		@RequestParam(defaultValue = "desc") String direction) {
+
+		Sort sortOrder = Sort.by(Sort.Order.by(sort).with(Sort.Direction.fromString(direction)));
+		Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+		return ResponseEntity.ok(gatheringService.getGatheringsByUserId(userId, pageable));
+	}
+
 	@Operation(summary = "모임 상세 조회", description = "모임의 상세 정보를 조회합니다.")
 	@GetMapping("/{id}")
 	ResponseEntity<GatheringWithParticipantsResponse> getGatheringById(@PathVariable("id") Long id,
