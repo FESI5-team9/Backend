@@ -29,6 +29,7 @@ public enum ExceptionCode {
 	FUTURE_GATHERING(HttpStatus.BAD_REQUEST, "FUTURE_GATHERING", "모임은 60일 이내로만 생성 가능합니다."),
 	CANCEL_GATHERING_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "CANCEL_GATHERING_NOT_AVAILABLE",
 		"모임 취소는 모임 시작 전까지만 가능합니다."),
+	GATHERING_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "GATHERING_NOT_COMPLETED", "모임이 완료되지 않았습니다."),
 
 	//참여
 	HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "HOST_CANNOT_LEAVE", "호스트는 모임을 떠날 수 없습니다."),
@@ -44,12 +45,15 @@ public enum ExceptionCode {
 	ALREADY_CANCELED_FAVORITE_GATHERING(HttpStatus.BAD_REQUEST, "ALREADY_CANCELED_FAVORITE_GATHERING",
 		"이미 찜을 취소한 모임입니다."),
 
+	// 리뷰
+	HOST_CANNOT_REVIEW(HttpStatus.BAD_REQUEST, "HOST_CANNOT_REVIEW", "호스트는 자기 모임에 리뷰를 작성할 수 없습니다."),
+	ALREADY_REVIEWED(HttpStatus.BAD_REQUEST, "ALREADY_REVIEWED", "이미 리뷰를 작성한 모임입니다."),
+
 	//파일
 	RESOURCE_SIZE_LIMIT(HttpStatus.BAD_REQUEST, "SIZE_LIMIT", "파일의 용량은 10mb 이하여야 합니다."),
 	//서버
 	IO_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "IO_EXCEPTION", "입출력 오류가 발생했습니다."),
 	SERVER_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "SERVER_CHECK", "서버 로그 확인을 요청해주세요.");
-
 	private HttpStatus status;
 	private String code;
 	private String message;

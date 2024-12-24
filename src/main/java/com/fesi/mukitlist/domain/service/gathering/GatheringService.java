@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fesi.mukitlist.api.controller.gathering.request.ChangeGatheringStautsRequest;
 import com.fesi.mukitlist.api.exception.AppException;
 import com.fesi.mukitlist.core.auth.application.User;
 import com.fesi.mukitlist.core.gathering.Gathering;
@@ -214,14 +215,11 @@ public class GatheringService {
 		favoriteService.unmarkAsFavorite(gathering, user);
 	}
 
-	public Map<String, String> changeGatheringStatus(Long id, GatheringStatus status, User user) {
+	public Map<String, String> changeGatheringStatus(Long id, ChangeGatheringStautsRequest request, User user) {
 		Gathering gathering = getGatheringsFrom(id);
-		if (gathering.getUser().getId().equals(user.getId())) {
-			gathering.changeStatus(status);
-		} else {
-			throw new AppException(FORBIDDEN);
-		}
-		return Map.of("모임 상태 변경", status.getDescription());
+		checkChangeStatusPermisson(user, gathering);
+		gathering.changeStatus(request.status());
+		return Map.of("모임 상태 변경", request.status().getDescription());
 	}
 
 	private boolean checkIsFavoriteGathering(Gathering gathering, User user) {
@@ -267,6 +265,12 @@ public class GatheringService {
 	private void checkHostUserMarkFavorite(User user, Gathering gathering) {
 		if (gathering.isHostUser(user)) {
 			throw new AppException(HOST_CANNOT_FAVORITE);
+		}
+	}
+
+	private void checkChangeStatusPermisson(User user, Gathering gathering) {
+		if (gathering.getUser().getId().equals(user.getId())) {
+			throw new AppException(FORBIDDEN);
 		}
 	}
 

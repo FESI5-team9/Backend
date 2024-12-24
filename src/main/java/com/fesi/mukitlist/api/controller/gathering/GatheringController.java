@@ -17,17 +17,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fesi.mukitlist.api.controller.annotation.Authorize;
+import com.fesi.mukitlist.api.controller.gathering.request.ChangeGatheringStautsRequest;
 import com.fesi.mukitlist.api.controller.gathering.request.GatheringCreateRequest;
 import com.fesi.mukitlist.api.controller.gathering.request.GatheringRequest;
 import com.fesi.mukitlist.api.controller.gathering.request.GatheringUpdateRequest;
 import com.fesi.mukitlist.api.response.SimpleApiResponse;
 import com.fesi.mukitlist.core.auth.PrincipalDetails;
-import com.fesi.mukitlist.core.gathering.constant.GatheringStatus;
 import com.fesi.mukitlist.core.gathering.constant.GatheringType;
 import com.fesi.mukitlist.core.gathering.constant.LocationType;
 import com.fesi.mukitlist.domain.service.gathering.GatheringService;
@@ -100,11 +101,11 @@ public class GatheringController {
 	}
 
 	@Operation(summary = "모임 상태 변경", description = "모임의 상태를 변경합니다.", security = @SecurityRequirement(name = "bearerAuth"))
-	@GetMapping("/{id}/recruit")
+	@PostMapping("/{id}/recruit")
 	ResponseEntity<Map<String, String>> getGatheringRecruit(@PathVariable("id") Long id,
-		@RequestParam GatheringStatus status,
+		@RequestBody ChangeGatheringStautsRequest request,
 		@Parameter(hidden = true) @Authorize PrincipalDetails user) {
-		return ResponseEntity.ok(gatheringService.changeGatheringStatus(id, status, user.getUser()));
+		return ResponseEntity.ok(gatheringService.changeGatheringStatus(id, request, user.getUser()));
 	}
 
 	@Operation(summary = "특정 모임의 참가자 목록 조회", description = "특정 모임의 참가자 목록을 페이지네이션 하여 조회합니다.")

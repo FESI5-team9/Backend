@@ -199,4 +199,8 @@ public class Gathering {
 		this.status = status;
 	}
 
+	public boolean isNotCompleted() {
+		return this.dateTime.isAfter(LocalDateTime.now());
+	}
+
 }

@@ -47,6 +47,7 @@ public class ParticipationService {
 
 	public Gathering leaveGathering(Gathering gathering, User user, LocalDateTime leaveTime) {
 		checkIsNotPastGathering(gathering, leaveTime);
+		checkIsCanceledGathering(gathering);
 
 		UserGatheringId userGatheringId = UserGatheringId.of(user, gathering);
 		UserGathering userGathering = userGatheringRepository.findById(userGatheringId)
