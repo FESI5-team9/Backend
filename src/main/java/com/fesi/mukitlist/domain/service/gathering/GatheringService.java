@@ -137,13 +137,14 @@ public class GatheringService {
 		checkCancelAuthority(gathering, user);
 
 		LocalDateTime canceledTime = LocalDateTime.now();
-		gathering.updateCanceledAt(canceledTime);
-		Gathering savedGathering = gatheringRepository.save(gathering);
+		checkCancelAvailability(gathering, canceledTime);
 
+		Gathering savedGathering = gatheringRepository.save(gathering);
 		List<Keyword> savedKeywords = keywordService.findByGathering(gathering);
 
 		return GatheringResponse.of(savedGathering, user, savedKeywords);
 	}
+
 
 	public void joinGathering(Long id, User user) {
 		Gathering gathering = getGatheringsFrom(id);
@@ -256,6 +257,13 @@ public class GatheringService {
 			throw new AppException(FORBIDDEN);
 		}
 	}
+
+	private void checkCancelAvailability(Gathering gathering, LocalDateTime canceledTime) {
+		if (!gathering.updateCanceledAt(canceledTime)) {
+			throw new AppException(CANCEL_GATHERING_NOT_AVAILABLE);
+		}
+	}
+
 
 	private void checkUpdateAuthority(Gathering gathering, User user) {
 		if (!gathering.isHostUser(user)) {

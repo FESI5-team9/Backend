@@ -186,12 +186,13 @@ public class Gathering {
 		this.participantCount = participantCount;
 	}
 
-	public void leaveParticipant() {
-		this.participantCount--;
-	}
-
-	public void updateCanceledAt(LocalDateTime canceledTime) {
-		this.canceledAt = canceledTime;
+	public boolean updateCanceledAt(LocalDateTime canceledTime) {
+		if (this.dateTime.isBefore(canceledTime)) {
+			return false;
+		} else {
+			this.canceledAt = canceledTime;
+			return true;
+		}
 	}
 
 	public void changeStatus(GatheringStatus status) {

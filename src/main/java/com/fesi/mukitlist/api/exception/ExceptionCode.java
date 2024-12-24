@@ -27,6 +27,7 @@ public enum ExceptionCode {
 	FORBIDDEN(HttpStatus.FORBIDDEN, "FORBIDDEN", "모임을 변경할 권한이 없습니다."),
 	PAST_GATHERING(HttpStatus.BAD_REQUEST, "PAST_GATHERING", "이미 지난 모임입니다."),
 	FUTURE_GATHERING(HttpStatus.BAD_REQUEST, "FUTURE_GATHERING", "모임은 60일 이내로만 생성 가능합니다."),
+	CANCEL_GATHERING_NOT_AVAILABLE(HttpStatus.BAD_REQUEST,"CANCEL_GATHERING_NOT_AVAILABLE", "모임 취소는 모임 시작 전까지만 가능합니다."),
 
 	//참여
 	HOST_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "HOST_CANNOT_LEAVE", "호스트는 모임을 떠날 수 없습니다."),
