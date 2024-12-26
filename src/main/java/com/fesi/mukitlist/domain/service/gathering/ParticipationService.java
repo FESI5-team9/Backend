@@ -4,6 +4,8 @@ import static com.fesi.mukitlist.api.exception.ExceptionCode.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,16 @@ public class ParticipationService {
 
 	public void checkAlreadyLeavedGathering(Gathering gathering, User user) {
 		checkIsAlreadyLeavedUser(gathering, user);
+	}
+
+	@Transactional(readOnly = true)
+	public Set<Gathering> getParticipatedGatheringsBy(List<Gathering> gatheringPage, User user) {
+		Set<UserGatheringId> userGatheringIds = gatheringPage.stream()
+			.map(gathering -> UserGatheringId.of(user, gathering))
+			.collect(Collectors.toSet());
+
+		return userGatheringRepository.findByIdIn(userGatheringIds).stream()
+			.map(userGathering -> userGathering.getId().getGathering()).collect(Collectors.toSet());
 	}
 
 	public Gathering joinGathering(Gathering gathering, User user, LocalDateTime joinedTime) {
@@ -64,10 +76,6 @@ public class ParticipationService {
 
 	public List<UserGathering> getParticipantsBy(Gathering gathering, Pageable pageable) {
 		return userGatheringRepository.findByIdGathering(gathering, pageable).getContent();
-	}
-
-	public List<UserGathering> getParticipantsBy(User user) {
-		return userGatheringRepository.findByIdUser(user);
 	}
 
 	public Page<UserGathering> getParticipantsWithFilters(User user, Boolean completed, Boolean reviewed,

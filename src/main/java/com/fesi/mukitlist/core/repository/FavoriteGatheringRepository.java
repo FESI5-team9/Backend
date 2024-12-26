@@ -1,6 +1,7 @@
 package com.fesi.mukitlist.core.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,7 @@ public interface FavoriteGatheringRepository extends JpaRepository<FavoriteGathe
 	List<FavoriteGathering> findById_UserId(Long userId);
 
 	boolean existsByIdGatheringIdAndIdUserId(Long gatheringId, Long userId);
+
+	Set<FavoriteGathering> findByIdIn(Set<FavoriteGatheringId> favoriteGatheringCandidates);
 }
+

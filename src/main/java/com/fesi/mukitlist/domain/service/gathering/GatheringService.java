@@ -4,6 +4,7 @@ import static com.fesi.mukitlist.api.exception.ExceptionCode.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +19,6 @@ import com.fesi.mukitlist.api.exception.AppException;
 import com.fesi.mukitlist.core.auth.application.User;
 import com.fesi.mukitlist.core.gathering.Gathering;
 import com.fesi.mukitlist.core.gathering.Keyword;
-import com.fesi.mukitlist.core.gathering.constant.GatheringStatus;
 import com.fesi.mukitlist.core.gathering.constant.GatheringType;
 import com.fesi.mukitlist.core.gathering.constant.LocationType;
 import com.fesi.mukitlist.core.repository.FavoriteGatheringRepository;
@@ -51,40 +51,17 @@ public class GatheringService {
 
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> getGatherings(GatheringServiceRequest request, User user, Pageable pageable) {
-
 		Page<Gathering> gatheringPage = gatheringRepository.findWithFilters(request, pageable);
-		List<UserGathering> userGatheringIds = participationService.getParticipantsBy(user);
-
-		List<Long> gatheringCandidates = userGatheringIds.stream()
-			.map(ug -> ug.getId().getGathering().getId())
-			.toList();
-
-		return gatheringPage.stream()
-			.map(g -> GatheringListResponse.of(
-				g,
-				gatheringCandidates.contains(g.getId()),
-				checkIsFavoriteGathering(g, user)))
-			.toList();
+		return gatheringResponseBy(user, gatheringPage);
 	}
+
 
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> searchGathering(List<String> search, User user, LocationType location,
-		GatheringType type,
-		Pageable pageable) {
+		GatheringType type, Pageable pageable) {
 
 		Page<Gathering> gatheringPage = gatheringRepository.searchByTerms(search, location, type, pageable);
-		List<UserGathering> userGatheringIds = participationService.getParticipantsBy(user);
-
-		List<Long> gatheringCandidates = userGatheringIds.stream()
-			.map(ug -> ug.getId().getGathering().getId())
-			.toList();
-
-		return gatheringPage.stream()
-			.map(g -> GatheringListResponse.of(
-				g,
-				gatheringCandidates.contains(g.getId()),
-				checkIsFavoriteGathering(g, user)))
-			.toList();
+		return gatheringResponseBy(user, gatheringPage);
 	}
 
 	@Transactional(readOnly = true)
@@ -230,6 +207,27 @@ public class GatheringService {
 		return Map.of("모임 상태 변경", request.status().getDescription());
 	}
 
+	private List<GatheringListResponse> gatheringResponseBy(User user, Page<Gathering> gatheringPage) {
+		Map<Long, GatheringListResponse> gatheringMap = gatheringPage.stream()
+			.collect(Collectors.toMap(Gathering::getId, GatheringListResponse::of));
+		List<Gathering> gatheringList = gatheringPage.getContent();
+
+		updateParticipationStatus(user, gatheringList, gatheringMap);
+		updateFavoriteStatus(user, gatheringList, gatheringMap);
+
+		return new ArrayList<>(gatheringMap.values());
+	}
+
+	private void updateFavoriteStatus(User user, List<Gathering> gatheringList, Map<Long, GatheringListResponse> gatheringMap) {
+		favoriteService.getFavoritedGatheringsBy(gatheringList, user)
+			.forEach(id -> gatheringMap.get(id).updateFavoriteStatusTrue());
+	}
+
+	private void updateParticipationStatus(User user, List<Gathering> gatheringList, Map<Long, GatheringListResponse> gatheringMap) {
+		participationService.getParticipatedGatheringsBy(gatheringList, user)
+			.forEach(gathering -> gatheringMap.get(gathering.getId()).updateParticipationStatusTrue());
+	}
+
 	private boolean checkIsFavoriteGathering(Gathering gathering, User user) {
 		return favoriteService.isFavorite(gathering, user);
 	}
@@ -287,12 +285,11 @@ public class GatheringService {
 			throw new AppException(ALREADY_FAVORITE_GATHERING);
 		}
 	}
+
 	private void checkIsAlreadyCanceledFavoriteGathering(Gathering gathering, User user) {
 		if (!favoriteGatheringRepository.existsByIdGatheringIdAndIdUserId(gathering.getId(), user.getId())) {
 			throw new AppException(ALREADY_CANCELED_FAVORITE_GATHERING);
 		}
 	}
-
-
 
 }
