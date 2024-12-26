@@ -5,6 +5,7 @@ import static com.fesi.mukitlist.api.exception.ExceptionCode.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,6 +53,11 @@ public class GatheringService {
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> getGatherings(GatheringServiceRequest request, User user, Pageable pageable) {
 		Page<Gathering> gatheringPage = gatheringRepository.findWithFilters(request, pageable);
+		if (user == null) {
+			return gatheringPage.stream()
+				.map(GatheringListResponse::of)
+				.toList();
+		}
 		return gatheringResponseBy(user, gatheringPage);
 	}
 
@@ -59,8 +65,12 @@ public class GatheringService {
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> searchGathering(List<String> search, User user, LocationType location,
 		GatheringType type, Pageable pageable) {
-
 		Page<Gathering> gatheringPage = gatheringRepository.searchByTerms(search, location, type, pageable);
+		if (user == null) {
+			return gatheringPage.stream()
+				.map(GatheringListResponse::of)
+				.toList();
+		}
 		return gatheringResponseBy(user, gatheringPage);
 	}
 
@@ -209,13 +219,13 @@ public class GatheringService {
 
 	private List<GatheringListResponse> gatheringResponseBy(User user, Page<Gathering> gatheringPage) {
 		Map<Long, GatheringListResponse> gatheringMap = gatheringPage.stream()
-			.collect(Collectors.toMap(Gathering::getId, GatheringListResponse::of));
+			.collect(Collectors.toMap(Gathering::getId, GatheringListResponse::of, (a, b) -> a, LinkedHashMap::new));
 		List<Gathering> gatheringList = gatheringPage.getContent();
 
 		updateParticipationStatus(user, gatheringList, gatheringMap);
 		updateFavoriteStatus(user, gatheringList, gatheringMap);
-
-		return new ArrayList<>(gatheringMap.values());
+		List<GatheringListResponse> responses = new ArrayList<>(gatheringMap.values());
+		return responses;
 	}
 
 	private void updateFavoriteStatus(User user, List<Gathering> gatheringList, Map<Long, GatheringListResponse> gatheringMap) {
