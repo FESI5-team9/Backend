@@ -153,11 +153,11 @@ class GatheringRepositoryTest {
 	@DisplayName("모임을 만든 사람으로 조회한다.")
 	void findGatheringsByUser() {
 		// given
-		User user = userRepository.findById(1L).orElseThrow();
+		Long userId = userRepository.findByEmail("email").get().getId();
 		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("id")));
 
 		// when
-		List<Gathering> gatherings = gatheringRepository.findGatheringsByUser(user, pageable);
+		List<Gathering> gatherings = gatheringRepository.findGatheringsByUserId(userId, pageable);
 
 		// then
 		assertThat(gatherings).hasSize(2).extracting("createdBy").containsExactly("test", "test");

@@ -82,40 +82,6 @@ public class AuthenticationController {
 		return new ResponseEntity<>(SimpleApiResponse.of("사용자 생성 성공"), HttpStatus.CREATED);
 	}
 
-//	@Operation(summary = "로그인", description = "로그인을 시도합니다.",
-//		responses = {
-//			@ApiResponse(responseCode = "200", description = "로그인 성공",
-//				content = @Content(
-//					mediaType = "application/json",
-//					schema = @Schema(implementation = AuthenticationResponse.class))),
-//			@ApiResponse(
-//				responseCode = "403",
-//				description = "권한 오류",
-//				content = @Content(
-//					mediaType = "application/json",
-//					schema = @Schema(
-//						example = "{\"code\":\"FORBIDDEN\",\"message\":\"권한이 없습니다.\"}"
-//					)
-//				)
-//			),
-//			@ApiResponse(
-//				responseCode = "404",
-//				description = "유저 없음",
-//				content = @Content(
-//					mediaType = "application/json",
-//					schema = @Schema(
-//						example = "{\"code\":\"NOT_FOUND\",\"message\":\"유저를 찾을 수 없습니다.\"}"
-//					)
-//				)
-//			),
-//		}
-//	)
-//	@PostMapping("/signin")
-//	public ResponseEntity<AuthenticationResponseV2> signInV2(
-//			@RequestBody KakaoLoginRequest request) {
-//		return ResponseEntity.ok(authenticationService.authenticate(request));
-//	}
-
 	@Operation(summary = "로그인", description = "로그인을 시도합니다.",
 			responses = {
 					@ApiResponse(responseCode = "200", description = "로그인 성공",
@@ -130,12 +96,6 @@ public class AuthenticationController {
 			@RequestBody AuthenticationServiceRequest request) {
 		return ResponseEntity.ok(authenticationService.authenticate(request));
 	}
-
-//	@PostMapping("kakao/signin")
-//	public ResponseEntity<AuthenticationResponseV2> signInKakao(
-//			@RequestBody KakaoLoginRequest request) {
-//		return ResponseEntity.ok(authenticationService.authenticate(request));
-//	}
 
 	@Operation(summary = "이메일 중복확인", description = "이메일 중복 확인을 진행합니다.",
 		responses = {

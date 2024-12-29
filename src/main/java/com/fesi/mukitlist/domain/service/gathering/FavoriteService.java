@@ -1,6 +1,7 @@
 package com.fesi.mukitlist.domain.service.gathering;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +21,17 @@ import lombok.RequiredArgsConstructor;
 public class FavoriteService {
 
 	private final FavoriteGatheringRepository favoriteGatheringRepository;
+
+	@Transactional(readOnly = true)
+	public Set<Long> getFavoritedGatheringsBy(List<Gathering> gatheringList, User user ) {
+		Set<FavoriteGatheringId> favoriteGatheringCandidates = gatheringList.stream()
+			.map(gathering -> FavoriteGatheringId.of(user.getId(), gathering.getId()))
+			.collect(Collectors.toSet());
+		return favoriteGatheringRepository.findByIdIn(favoriteGatheringCandidates)
+			.stream()
+			.map(favoriteGathering -> favoriteGathering.getId().getGatheringId())
+			.collect(Collectors.toSet());
+	}
 
 	public boolean isFavorite(Gathering gathering, User user) {
 		boolean isFavorite = false;

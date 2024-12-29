@@ -4,6 +4,7 @@ import static com.fesi.mukitlist.api.exception.ExceptionCode.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -51,25 +52,15 @@ public class ReviewService {
 			.toList();
 	}
 
-	@Transactional(readOnly = true)
-	public List<ReviewResponse> getReviewsBy(ReviewServiceRequest request) {
-
-		Pageable pageable = PageService.pageableBy(request.page(), request.size(), request.sort(),
-			request.direction());
-		Page<Review> reviewsPage = reviewRepository.findAllByGatheringId(request.gatheringId(), pageable);
-
-		return reviewsPage.stream()
-			.map(ReviewResponse::of)
-			.toList();
-	}
-
 	public ReviewResponse createReview(ReviewServiceCreateRequest request, User user) {
 
 		Gathering gathering = getGatheringsFrom(request.gatheringId());
+		checkIsHostUser(user, gathering);
 		checkIsUserParticipant(user, gathering);
+		checkIsCompletedGathering(gathering);
+		checkIsUserAlreadyReviewed(user, gathering);
 
 		Review savedReview = reviewRepository.save(request.toEntity(gathering, user));
-
 		return ReviewResponse.of(savedReview);
 	}
 
@@ -118,6 +109,12 @@ public class ReviewService {
 
 	}
 
+	private void checkIsHostUser(User user, Gathering gathering) {
+		if (Objects.equals(gathering.getUser().getId(), user.getId())) {
+			throw new AppException(HOST_CANNOT_REVIEW);
+		}
+	}
+
 	private long getTotalReviewSum(Map<Integer, Long> reviewScoreCounts) {
 		return reviewScoreCounts.values().stream()
 			.mapToLong(Long::longValue)
@@ -143,6 +140,18 @@ public class ReviewService {
 
 	private Gathering getGatheringsFrom(Long id) {
 		return gatheringRepository.findById(id).orElseThrow(() -> new AppException(NOT_FOUND));
+	}
+
+	private void checkIsUserAlreadyReviewed(User user, Gathering gathering) {
+		if (reviewRepository.existsByUserAndGathering(user, gathering)) {
+			throw new AppException(ALREADY_REVIEWED);
+		}
+	}
+
+	private void checkIsCompletedGathering(Gathering gathering) {
+		if (gathering.isNotCompleted()) {
+			throw new AppException(GATHERING_NOT_COMPLETED);
+		}
 	}
 
 }

@@ -2,6 +2,8 @@ package com.fesi.mukitlist.core.usergathering;
 
 import java.time.LocalDateTime;
 
+import com.fesi.mukitlist.core.gathering.Gathering;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;

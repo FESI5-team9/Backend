@@ -1,14 +1,13 @@
 package com.fesi.mukitlist.core.repository.usergathering;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.fesi.mukitlist.core.auth.application.User;
 import com.fesi.mukitlist.core.gathering.Gathering;
@@ -29,10 +28,7 @@ public interface UserGatheringRepository
 
 	List<UserGathering> findByIdGathering(Gathering gathering);
 
-	List<UserGathering> findByIdUser(User user);
-
-	@Query("SELECT ug.id.gathering FROM UserGathering ug WHERE ug.id.user = :user AND NOT EXISTS (SELECT 1 FROM Review r WHERE r.gathering = ug.id.gathering)")
-	List<Gathering> findGatheringsWithoutReviewsByUser(@Param("user") User user);
-
 	boolean existsByIdUserAndIdGathering(User user, Gathering gathering);
+
+	Set<UserGathering> findByIdIn(Set<UserGatheringId> userGatheringIds);
 }
