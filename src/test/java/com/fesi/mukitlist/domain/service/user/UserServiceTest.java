@@ -1,5 +1,7 @@
 package com.fesi.mukitlist.domain.service.user;
 
+import static com.fesi.mukitlist.api.exception.ExceptionCode.EMAIL_EXIST;
+import static com.fesi.mukitlist.api.exception.ExceptionCode.NICKNAME_EXIST;
 import static org.assertj.core.api.Assertions.*;
 
 import com.fesi.mukitlist.api.controller.auth.request.UserCreateRequest;
@@ -8,7 +10,6 @@ import com.fesi.mukitlist.core.auth.application.User;
 import com.fesi.mukitlist.core.repository.UserRepository;
 import com.fesi.mukitlist.domain.service.auth.application.UserService;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,79 +22,65 @@ import java.time.LocalDateTime;
 @SpringBootTest
 public class UserServiceTest {
 
-    private String email;
-    private String password ;
-    private String nickname;
-    private String anotherEmail;
-    private String anotherNickname;
-    private LocalDateTime CurrentDateTime = LocalDateTime.now();
-
     @Autowired
     private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
 
-    @BeforeEach
-    void setUp() {
-        email = "user4@example.com";
-        password = "test!123";
-        nickname = "nickname4";
-        anotherEmail = "user5@example.com";
-        anotherNickname = "nickname5";
-
-        // 닉네임 중복 체크 전 repository 데이터 삭제
-        userRepository.deleteAll();
-
-        User user = User.builder()
-                .email(email)
-                .password(password)
-                .nickname(nickname)
-                .createdAt(CurrentDateTime)
-                .updatedAt(CurrentDateTime)
-                .build();
-        userRepository.save(user);
-    }
-
     @AfterEach
     void tearDown() {
-        userRepository.deleteAll();
+        userRepository.deleteAllInBatch();
     }
 
     @DisplayName("유저 생성 시 중복된 이메일은 사용자 생성을 할 수 없습니다.")
     @Test
     void testRegisterUserWithExistEmail() {
         // given
+        User user = createUser("test@test.com", "test");
+        userRepository.save(user);
+
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-                .email(email)
-                .password(password)
-                .nickname(anotherNickname)
+                .email("test@test.com")
+                .password("test1234!")
+                .nickname("test2")
                 .build();
 
         // when // then
         assertThatThrownBy(() -> userService.createUser(userCreateRequest.toServiceRequest()))
                 .isInstanceOf(AppException.class)
                 .extracting("exceptionCode")
-                .extracting("code", "message")
-                .containsExactly("EMAIL_EXIST", "중복된 이메일입니다.");
+                .isEqualTo(EMAIL_EXIST);
     }
 
     @DisplayName("유저 생성 시 중복된 닉네임은 사용자 생성을 할 수 없습니다.")
     @Test
     void testRegisterUserWithExistNickname() {
         // given
+        User user = createUser("test@test.com", "test");
+        userRepository.save(user);
+
         UserCreateRequest userCreateRequest = UserCreateRequest.builder()
-                .email(anotherEmail)
-                .password(password)
-                .nickname(nickname)
+                .email("test1@test.com")
+                .password("test1234!")
+                .nickname("test")
                 .build();
 
         // when // then
         assertThatThrownBy(() -> userService.createUser(userCreateRequest.toServiceRequest()))
                 .isInstanceOf(AppException.class)
                 .extracting("exceptionCode")
-                .extracting("code", "message")
-                .containsExactly("NICKNAME_EXIST", "중복된 닉네임입니다.");
+                .isEqualTo(NICKNAME_EXIST);
+    }
+
+    private User createUser(String email, String nickname) {
+        return User.builder()
+                .email(email)
+                .nickname(nickname)
+                .password("test1234!")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
     }
 
 }
