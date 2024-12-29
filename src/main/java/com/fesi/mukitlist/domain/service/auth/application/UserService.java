@@ -31,18 +31,30 @@ public class UserService {
 
 	public User createUser(UserServiceCreateRequest request) {
 
-		if (userRepository.existsUserByEmail(request.email())) {
-			throw new AppException(EMAIL_EXIST);
-		}
-		if (userRepository.existsUserByNickname(request.nickname())) {
-			throw new AppException(NICKNAME_EXIST);
-		}
+		validatedUserInfo(request);
 
 		String encodePassword = passwordEncoder.encode(request.password()); // 해싱하는 부분
 		User user = User.create(request, encodePassword);
 		return userRepository.save(user);
 	}
 
+	private void validatedUserInfo(UserServiceCreateRequest request) {
+		checkEmailExistence(request);
+		checkNicknameExistence(request);
+	}
+
+	private void checkNicknameExistence(UserServiceCreateRequest request) {
+		if (userRepository.existsUserByNickname(request.nickname())) {
+			throw new AppException(NICKNAME_EXIST);
+		}
+	}
+
+	private void checkEmailExistence(UserServiceCreateRequest request) {
+		if (userRepository.existsUserByEmail(request.email())) {
+			throw new AppException(EMAIL_EXIST);
+		}
+	}
+	
 	public User createKaKaoUser(KakaoServiceCreateRequest userCreateRequest) {
 		User user = User.createOAuth2User(userCreateRequest);
 		return userRepository.save(user);
