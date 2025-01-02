@@ -28,7 +28,7 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Jpa
 		return this.findAll(specification, pageable);
 	}
 
-	List<Gathering> findAllByIdIn(List<Long> gatheringId, Pageable pageable);
+	Page<Gathering> findAllByIdIn(List<Long> gatheringId, Pageable pageable);
 
 	List<Gathering> findGatheringsByUserId(Long userId, Pageable pageable);
 

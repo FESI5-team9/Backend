@@ -94,7 +94,11 @@ public class GatheringService {
 		Gathering savedGathering = gatheringRepository.save(gathering);
 
 		participationService.joinGathering(savedGathering, user, gathering.getCreatedAt());
-		List<Keyword> savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+
+		List<Keyword> savedKeywords = new ArrayList<>();
+		if (request.keyword() != null) {
+		 savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+		}
 
 		return GatheringCreateResponse.of(savedGathering, savedKeywords);
 	}
@@ -195,11 +199,9 @@ public class GatheringService {
 	public List<GatheringListResponse> findFavoriteGatheringsBy(User user, Pageable pageable) {
 
 		List<Long> gatheringCandidates = favoriteService.findFavoriteGatheringIdBy(user.getId());
-		List<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
+		Page<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
 
-		return gatherings.stream()
-			.map(GatheringListResponse::of)
-			.toList();
+		return gatheringResponseBy(user, gatherings);
 	}
 
 	public void choiceFavorite(Long id, User user) {
