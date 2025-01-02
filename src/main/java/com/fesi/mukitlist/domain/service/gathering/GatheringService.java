@@ -94,7 +94,11 @@ public class GatheringService {
 		Gathering savedGathering = gatheringRepository.save(gathering);
 
 		participationService.joinGathering(savedGathering, user, gathering.getCreatedAt());
-		List<Keyword> savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+
+		List<Keyword> savedKeywords = new ArrayList<>();
+		if (request.keyword() != null) {
+			savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+		}
 
 		return GatheringCreateResponse.of(savedGathering, savedKeywords);
 	}
@@ -107,7 +111,7 @@ public class GatheringService {
 
 		if (request.image() == null) {
 			storedName = gathering.getImage();
-		} else if (Objects.equals(request.image().getOriginalFilename(), "")) {
+		} else if (request.image().getSize() == 0) {
 			storedName = "";
 		} else {
 			storedName = s3Service.upload(request.image(), request.image().getOriginalFilename());
