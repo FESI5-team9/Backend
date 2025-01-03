@@ -97,7 +97,7 @@ public class GatheringService {
 
 		List<Keyword> savedKeywords = new ArrayList<>();
 		if (request.keyword() != null) {
-		 savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+			savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
 		}
 
 		return GatheringCreateResponse.of(savedGathering, savedKeywords);
@@ -111,7 +111,7 @@ public class GatheringService {
 
 		if (request.image() == null) {
 			storedName = gathering.getImage();
-		} else if (Objects.equals(request.image().getOriginalFilename(), "")) {
+		} else if (request.image().getSize() == 0) {
 			storedName = "";
 		} else {
 			storedName = s3Service.upload(request.image(), request.image().getOriginalFilename());
@@ -199,9 +199,11 @@ public class GatheringService {
 	public List<GatheringListResponse> findFavoriteGatheringsBy(User user, Pageable pageable) {
 
 		List<Long> gatheringCandidates = favoriteService.findFavoriteGatheringIdBy(user.getId());
-		Page<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
+		List<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
 
-		return gatheringResponseBy(user, gatherings);
+		return gatherings.stream()
+			.map(GatheringListResponse::of)
+			.toList();
 	}
 
 	public void choiceFavorite(Long id, User user) {
