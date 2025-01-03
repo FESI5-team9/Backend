@@ -294,7 +294,7 @@ public class GatheringService {
 	}
 
 	private void checkChangeStatusPermisson(User user, Gathering gathering) {
-		if (gathering.getUser().getId().equals(user.getId())) {
+		if (!gathering.getUser().getId().equals(user.getId())) {
 			throw new AppException(FORBIDDEN);
 		}
 	}

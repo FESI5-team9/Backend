@@ -142,7 +142,7 @@ class GatheringRepositoryTest {
 		Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("dateTime")));
 
 		// when
-		List<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
+		Page<Gathering> gatherings = gatheringRepository.findAllByIdIn(gatheringCandidates, pageable);
 
 		// then
 		assertThat(gatherings).hasSize(2)
