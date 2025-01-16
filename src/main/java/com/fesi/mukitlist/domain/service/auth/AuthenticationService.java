@@ -7,6 +7,7 @@ import static com.fesi.mukitlist.core.auth.TokenType.*;
 import java.io.IOException;
 
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fesi.mukitlist.api.controller.auth.response.AuthenticationResponse;
@@ -30,6 +31,7 @@ public class AuthenticationService {
 	private final UserRepository userRepository;
 	private final TokenRepository tokenRepository;
 	private final JwtService jwtService;
+	private final PasswordEncoder passwordEncoder;
 
 	public String checkRefreshToken(PrincipalDetails principalDetails) {
 		if (tokenIsEmpty(principalDetails)) {
@@ -66,6 +68,9 @@ public class AuthenticationService {
 	public AuthenticationResponseV2 authenticate(AuthenticationServiceRequest request) {
 		User user = userRepository.findByEmail(request.email())
 			.orElseThrow(() -> new AppException(NOT_FOUND_USER));
+
+		validatePassword(request.password(), user);
+
 		PrincipalDetails principalDetails = new PrincipalDetails(user);
 
 		String accessToken = jwtService.generateAccessToken(principalDetails);
@@ -75,6 +80,12 @@ public class AuthenticationService {
 			.accessToken(accessToken)
 			.refreshToken(refreshToken)
 			.build();
+	}
+
+	private void validatePassword(String password, User user) {
+		if (!passwordEncoder.matches(password, user.getPassword())) {
+			throw new AppException(WRONG_PASSWORD);
+		}
 	}
 
 	public String generateToNewAccessToken(String refreshToken) throws IOException {

@@ -14,6 +14,7 @@ public enum ExceptionCode {
 	NICKNAME_EXIST(HttpStatus.BAD_REQUEST, "NICKNAME_EXIST", "중복된 닉네임입니다."),
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "NOT_FOUND", "사용자를 찾을 수 없습니다."),
 	LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "LOGIN_REQUIRED", "로그인이 필요합니다."),
+	WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "WRONG_PASSWORD", "잘못된 비밀번호입니다."),
 
 	//인증
 	TOKEN_IS_NOT_IN_COOKIE(HttpStatus.BAD_REQUEST, "TOKEN_IS_NOT_IN_COOKIE", "토큰을 쿠키에서 찾을 수 없습니다."),
