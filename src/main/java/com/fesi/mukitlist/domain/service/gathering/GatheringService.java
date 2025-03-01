@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -61,7 +62,6 @@ public class GatheringService {
 		return gatheringResponseBy(user, gatheringPage);
 	}
 
-
 	@Transactional(readOnly = true)
 	public List<GatheringListResponse> searchGathering(List<String> search, User user, LocationType location,
 		GatheringType type, Pageable pageable) {
@@ -94,7 +94,11 @@ public class GatheringService {
 		Gathering savedGathering = gatheringRepository.save(gathering);
 
 		participationService.joinGathering(savedGathering, user, gathering.getCreatedAt());
-		List<Keyword> savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+
+		List<Keyword> savedKeywords = new ArrayList<>();
+		if (request.keyword() != null) {
+			savedKeywords = keywordService.saveKeywords(request.keyword(), gathering);
+		}
 
 		return GatheringCreateResponse.of(savedGathering, savedKeywords);
 	}
@@ -103,11 +107,16 @@ public class GatheringService {
 		IOException {
 
 		String storedName = "";
-		if (request.image() != null) {
+		Gathering gathering = getGatheringsFrom(id);
+
+		if (request.image() == null) {
+			storedName = gathering.getImage();
+		} else if (request.image().getSize() == 0) {
+			storedName = "";
+		} else {
 			storedName = s3Service.upload(request.image(), request.image().getOriginalFilename());
 		}
 
-		Gathering gathering = getGatheringsFrom(id);
 		checkUpdateAuthority(gathering, user);
 
 		Gathering savedGathering = gatheringRepository.save(gathering.update(request, storedName));
@@ -228,12 +237,14 @@ public class GatheringService {
 		return responses;
 	}
 
-	private void updateFavoriteStatus(User user, List<Gathering> gatheringList, Map<Long, GatheringListResponse> gatheringMap) {
+	private void updateFavoriteStatus(User user, List<Gathering> gatheringList,
+		Map<Long, GatheringListResponse> gatheringMap) {
 		favoriteService.getFavoritedGatheringsBy(gatheringList, user)
 			.forEach(id -> gatheringMap.get(id).updateFavoriteStatusTrue());
 	}
 
-	private void updateParticipationStatus(User user, List<Gathering> gatheringList, Map<Long, GatheringListResponse> gatheringMap) {
+	private void updateParticipationStatus(User user, List<Gathering> gatheringList,
+		Map<Long, GatheringListResponse> gatheringMap) {
 		participationService.getParticipatedGatheringsBy(gatheringList, user)
 			.forEach(gathering -> gatheringMap.get(gathering.getId()).updateParticipationStatusTrue());
 	}
@@ -285,7 +296,7 @@ public class GatheringService {
 	}
 
 	private void checkChangeStatusPermisson(User user, Gathering gathering) {
-		if (gathering.getUser().getId().equals(user.getId())) {
+		if (!gathering.getUser().getId().equals(user.getId())) {
 			throw new AppException(FORBIDDEN);
 		}
 	}
