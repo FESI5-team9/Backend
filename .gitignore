@@ -45,3 +45,5 @@ out/
 
 ### SubModule ###
 /src/main/resources/
+
+.codegpt
