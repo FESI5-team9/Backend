@@ -2,9 +2,8 @@ package com.fesi.mukitlist.api.controller.review.request;
 
 import java.time.LocalDateTime;
 
-import com.fesi.mukitlist.core.gathering.constant.GatheringType;
-import com.fesi.mukitlist.domain.service.review.request.ReviewServiceRequest;
-import com.fesi.mukitlist.core.gathering.constant.LocationType;
+import com.fesi.mukitlist.domain.gathering.GatheringType;
+import com.fesi.mukitlist.api.service.review.request.ReviewServiceRequest;
 
 import lombok.Builder;
 
@@ -12,18 +11,11 @@ public record ReviewRequest(
 	Long gatheringId,
 	Long userId,
 	GatheringType type,
-	LocationType location,
-	LocalDateTime registrationEnd,
-	int size,
-	int page,
-	String sort,
-	String direction
-) {
+	String location,
+	LocalDateTime date,
+	LocalDateTime registrationEnd
 
-	public static ReviewRequest of(Long gatheringId, Long userId, GatheringType type, LocationType location,
-		LocalDateTime registrationEnd, int size, int page, String sort, String direction) {
-		return new ReviewRequest(gatheringId, userId, type, location, registrationEnd, size, page, sort, direction);
-	}
+) {
 
 	@Builder
 	public ReviewServiceRequest toServiceRequest() {
@@ -32,11 +24,13 @@ public record ReviewRequest(
 			.userId(userId)
 			.type(type)
 			.location(location)
+			.date(date)
 			.registrationEnd(registrationEnd)
-			.size(size)
-			.page(page)
-			.sort(sort)
-			.direction(direction)
 			.build();
+	}
+
+	public static ReviewRequest of(Long gatheringId, Long userId, GatheringType type, String location,
+		LocalDateTime date, LocalDateTime registrationEnd) {
+		return new ReviewRequest(gatheringId, userId, type, location, date, registrationEnd);
 	}
 }

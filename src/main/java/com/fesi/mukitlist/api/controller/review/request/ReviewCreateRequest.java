@@ -1,6 +1,6 @@
 package com.fesi.mukitlist.api.controller.review.request;
 
-import com.fesi.mukitlist.domain.service.review.request.ReviewServiceCreateRequest;
+import com.fesi.mukitlist.api.service.review.request.ReviewServiceCreateRequest;
 
 public record ReviewCreateRequest(
 	Long gatheringId,
